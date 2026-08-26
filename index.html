@@ -1,1 +1,605 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SocialPoint - Social Engagement Platform</title>
 
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: Arial, sans-serif;
+    }
+
+    body {
+      background: #f5f7fb;
+      color: #1f2937;
+    }
+
+    header {
+      background: #111827;
+      color: white;
+      padding: 16px 6%;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+
+    .logo {
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .logo span {
+      color: #22c55e;
+    }
+
+    nav {
+      display: flex;
+      gap: 10px;
+    }
+
+    nav button {
+      border: none;
+      padding: 9px 15px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .login-btn {
+      background: transparent;
+      color: white;
+      border: 1px solid #555 !important;
+    }
+
+    .register-btn {
+      background: #22c55e;
+      color: white;
+    }
+
+    .hero {
+      padding: 70px 6%;
+      text-align: center;
+      background: linear-gradient(135deg, #111827, #1e293b);
+      color: white;
+    }
+
+    .hero h1 {
+      font-size: 45px;
+      margin-bottom: 15px;
+    }
+
+    .hero h1 span {
+      color: #22c55e;
+    }
+
+    .hero p {
+      max-width: 650px;
+      margin: auto;
+      line-height: 1.7;
+      color: #d1d5db;
+    }
+
+    .hero-buttons {
+      margin-top: 25px;
+    }
+
+    .hero-buttons button {
+      padding: 13px 22px;
+      margin: 5px;
+      border: none;
+      border-radius: 9px;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .primary {
+      background: #22c55e;
+      color: white;
+    }
+
+    .secondary {
+      background: white;
+      color: #111827;
+    }
+
+    .container {
+      width: 88%;
+      max-width: 1100px;
+      margin: 35px auto;
+    }
+
+    .section-title {
+      text-align: center;
+      margin-bottom: 25px;
+      font-size: 28px;
+    }
+
+    .points-card {
+      background: white;
+      border-radius: 15px;
+      padding: 25px;
+      box-shadow: 0 5px 20px rgba(0,0,0,0.07);
+      text-align: center;
+      margin-bottom: 35px;
+    }
+
+    .points-number {
+      font-size: 42px;
+      font-weight: bold;
+      color: #22c55e;
+      margin: 10px;
+    }
+
+    .social-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+      gap: 15px;
+    }
+
+    .social-card {
+      background: white;
+      padding: 22px;
+      border-radius: 13px;
+      text-align: center;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+    }
+
+    .social-icon {
+      font-size: 35px;
+      margin-bottom: 10px;
+    }
+
+    .social-card h3 {
+      margin-bottom: 8px;
+    }
+
+    .social-card p {
+      font-size: 13px;
+      color: #6b7280;
+      margin-bottom: 15px;
+    }
+
+    .social-card button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      background: #111827;
+      color: white;
+      border-radius: 7px;
+      cursor: pointer;
+    }
+
+    .task-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+      gap: 18px;
+    }
+
+    .task {
+      background: white;
+      padding: 20px;
+      border-radius: 13px;
+      box-shadow: 0 5px 18px rgba(0,0,0,0.06);
+    }
+
+    .task h3 {
+      margin-bottom: 8px;
+    }
+
+    .task p {
+      color: #6b7280;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+
+    .points {
+      color: #16a34a;
+      font-weight: bold;
+      margin: 12px 0;
+    }
+
+    .task button {
+      width: 100%;
+      padding: 10px;
+      border: none;
+      border-radius: 7px;
+      background: #22c55e;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .promote {
+      background: #111827;
+      color: white;
+      padding: 35px;
+      border-radius: 15px;
+      text-align: center;
+      margin-top: 35px;
+    }
+
+    .promote p {
+      color: #d1d5db;
+      margin: 12px auto 20px;
+      max-width: 650px;
+      line-height: 1.6;
+    }
+
+    .promote button {
+      padding: 12px 22px;
+      border: none;
+      border-radius: 8px;
+      background: #22c55e;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    footer {
+      background: #111827;
+      color: #9ca3af;
+      text-align: center;
+      padding: 25px;
+      margin-top: 50px;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.65);
+      justify-content: center;
+      align-items: center;
+      z-index: 999;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: white;
+      width: 100%;
+      max-width: 400px;
+      padding: 30px;
+      border-radius: 15px;
+      position: relative;
+    }
+
+    .modal-box h2 {
+      margin-bottom: 20px;
+      text-align: center;
+    }
+
+    .modal-box input {
+      width: 100%;
+      padding: 12px;
+      margin-bottom: 12px;
+      border: 1px solid #ddd;
+      border-radius: 7px;
+    }
+
+    .modal-box button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 7px;
+      background: #22c55e;
+      color: white;
+      cursor: pointer;
+      font-weight: bold;
+    }
+
+    .close {
+      position: absolute;
+      right: 15px;
+      top: 10px;
+      font-size: 25px;
+      cursor: pointer;
+      color: #555;
+    }
+
+    .notice {
+      margin-top: 15px;
+      font-size: 13px;
+      text-align: center;
+      color: #6b7280;
+    }
+
+    @media (max-width: 600px) {
+      .hero h1 {
+        font-size: 34px;
+      }
+
+      header {
+        padding: 13px 4%;
+      }
+
+      .logo {
+        font-size: 21px;
+      }
+
+      nav button {
+        padding: 8px 10px;
+        font-size: 12px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">Social<span>Point</span></div>
+
+  <nav>
+    <button class="login-btn" onclick="openModal('login')">Login</button>
+    <button class="register-btn" onclick="openModal('register')">Register</button>
+  </nav>
+</header>
+
+<section class="hero">
+  <h1>Grow Your <span>Social Presence</span></h1>
+
+  <p>
+    SocialPoint helps creators discover opportunities to promote
+    their social profiles and build a stronger online presence.
+  </p>
+
+  <div class="hero-buttons">
+    <button class="primary" onclick="openModal('register')">
+      Get Started
+    </button>
+
+    <button class="secondary" onclick="document.getElementById('social').scrollIntoView()">
+      Explore
+    </button>
+  </div>
+</section>
+
+<div class="container">
+
+  <div class="points-card">
+    <h2>Your Points</h2>
+    <div class="points-number" id="points">0</div>
+    <p>Complete eligible activities to earn points.</p>
+  </div>
+
+  <h2 class="section-title" id="social">Social Platforms</h2>
+
+  <div class="social-grid">
+
+    <div class="social-card">
+      <div class="social-icon">📘</div>
+      <h3>Facebook</h3>
+      <p>Add your Facebook profile or page.</p>
+      <button onclick="openModal('profile')">Add Profile</button>
+    </div>
+
+    <div class="social-card">
+      <div class="social-icon">▶️</div>
+      <h3>YouTube</h3>
+      <p>Add your YouTube channel.</p>
+      <button onclick="openModal('profile')">Add Channel</button>
+    </div>
+
+    <div class="social-card">
+      <div class="social-icon">📸</div>
+      <h3>Instagram</h3>
+      <p>Add your Instagram profile.</p>
+      <button onclick="openModal('profile')">Add Profile</button>
+    </div>
+
+    <div class="social-card">
+      <div class="social-icon">𝕏</div>
+      <h3>X / Twitter</h3>
+      <p>Add your X profile.</p>
+      <button onclick="openModal('profile')">Add Profile</button>
+    </div>
+
+    <div class="social-card">
+      <div class="social-icon">📌</div>
+      <h3>Pinterest</h3>
+      <p>Add your Pinterest profile.</p>
+      <button onclick="openModal('profile')">Add Profile</button>
+    </div>
+
+    <div class="social-card">
+      <div class="social-icon">🎵</div>
+      <h3>TikTok</h3>
+      <p>Add your TikTok profile.</p>
+      <button onclick="openModal('profile')">Add Profile</button>
+    </div>
+
+  </div>
+
+  <br><br>
+
+  <h2 class="section-title">Available Activities</h2>
+
+  <div class="task-grid">
+
+    <div class="task">
+      <h3>👤 Complete Profile</h3>
+      <p>Complete your SocialPoint profile information.</p>
+      <div class="points">+10 Points</div>
+      <button onclick="earnPoints(10)">Complete</button>
+    </div>
+
+    <div class="task">
+      <h3>📅 Daily Check-in</h3>
+      <p>Return every day and check in to receive points.</p>
+      <div class="points">+5 Points</div>
+      <button onclick="earnPoints(5)">Check In</button>
+    </div>
+
+    <div class="task">
+      <h3>👥 Referral</h3>
+      <p>Invite friends to SocialPoint using your referral link.</p>
+      <div class="points">+25 Points</div>
+      <button onclick="alert('Referral system will be connected with Supabase.')">
+        Invite
+      </button>
+    </div>
+
+  </div>
+
+  <div class="promote">
+    <h2>📢 Promote Your Social Profile</h2>
+
+    <p>
+      Create a promotional listing and let other users discover
+      your social profile. Promotional features will be connected
+      to your points balance.
+    </p>
+
+    <button onclick="openModal('promote')">
+      Create Promotion
+    </button>
+  </div>
+
+</div>
+
+<footer>
+  <p>© 2026 SocialPoint. All rights reserved.</p>
+</footer>
+
+<!-- MODAL -->
+
+<div class="modal" id="modal">
+  <div class="modal-box">
+
+    <span class="close" onclick="closeModal()">×</span>
+
+    <div id="modalContent"></div>
+
+  </div>
+</div>
+
+<script>
+
+  let points = 0;
+
+  function earnPoints(amount) {
+    points += amount;
+
+    document.getElementById("points").innerText = points;
+
+    alert("Congratulations! +" + amount + " Points");
+  }
+
+  function openModal(type) {
+
+    const modal = document.getElementById("modal");
+    const content = document.getElementById("modalContent");
+
+    modal.style.display = "flex";
+
+    if (type === "login") {
+
+      content.innerHTML = `
+        <h2>Welcome Back</h2>
+
+        <input type="email" placeholder="Email">
+
+        <input type="password" placeholder="Password">
+
+        <button onclick="demoLogin()">Login</button>
+
+        <div class="notice">
+          Supabase Authentication will be connected here.
+        </div>
+      `;
+
+    } else if (type === "register") {
+
+      content.innerHTML = `
+        <h2>Create Account</h2>
+
+        <input type="text" placeholder="Full Name">
+
+        <input type="email" placeholder="Email">
+
+        <input type="password" placeholder="Password">
+
+        <button onclick="demoRegister()">Create Account</button>
+
+        <div class="notice">
+          Your account will later be stored securely in Supabase.
+        </div>
+      `;
+
+    } else if (type === "profile") {
+
+      content.innerHTML = `
+        <h2>Add Social Profile</h2>
+
+        <input type="text" placeholder="Platform Name">
+
+        <input type="url" placeholder="Profile URL">
+
+        <button onclick="saveProfile()">Save Profile</button>
+
+        <div class="notice">
+          Only add profiles you own or are authorized to promote.
+        </div>
+      `;
+
+    } else if (type === "promote") {
+
+      content.innerHTML = `
+        <h2>Create Promotion</h2>
+
+        <input type="text" placeholder="Promotion Title">
+
+        <input type="url" placeholder="Social Profile URL">
+
+        <button onclick="createPromotion()">Create Promotion</button>
+
+        <div class="notice">
+          Promotion and points billing will be connected later.
+        </div>
+      `;
+    }
+  }
+
+  function closeModal() {
+    document.getElementById("modal").style.display = "none";
+  }
+
+  function demoLogin() {
+    alert("Login UI ready. Supabase Authentication will be connected next.");
+    closeModal();
+  }
+
+  function demoRegister() {
+    alert("Registration UI ready. Supabase Authentication will be connected next.");
+    closeModal();
+  }
+
+  function saveProfile() {
+    alert("Profile form saved for demo. Database connection will be added next.");
+    closeModal();
+  }
+
+  function createPromotion() {
+    alert("Promotion form ready. Points system will be connected next.");
+    closeModal();
+  }
+
+  window.onclick = function(event) {
+    const modal = document.getElementById("modal");
+
+    if (event.target === modal) {
+      closeModal();
+    }
+  };
+
+</script>
+
+</body>
+</html>
