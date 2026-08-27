@@ -31,7 +31,7 @@ header{
   border-radius:12px;
   box-shadow:0 3px 12px #0002;
 }
-input,textarea{
+input,select{
   width:100%;
   padding:12px;
   margin:7px 0;
@@ -55,10 +55,25 @@ button{
 .hidden{
   display:none;
 }
+.link{
+  background:#f8fafc;
+  padding:12px;
+  margin-top:10px;
+  border-radius:8px;
+}
+.link a{
+  word-break:break-all;
+}
 #message{
   text-align:center;
   font-weight:bold;
   margin:10px;
+}
+.points{
+  font-size:28px;
+  font-weight:bold;
+  text-align:center;
+  color:#2563eb;
 }
 </style>
 </head>
@@ -108,18 +123,43 @@ Already have an account?
 <div class="card">
 <h2>Welcome! 🎉</h2>
 <p id="userEmail"></p>
+
+<div class="points">
+⭐ <span id="points">0</span> Points
+</div>
 </div>
 
+<!-- ADD LINK -->
 <div class="card">
-<h2>Create Post 📝</h2>
+<h2>➕ Add Social Link</h2>
 
-<textarea id="postText" rows="4"
-placeholder="What's on your mind?"></textarea>
+<select id="platform">
+<option value="YouTube">YouTube</option>
+<option value="Facebook">Facebook</option>
+<option value="Instagram">Instagram</option>
+<option value="TikTok">TikTok</option>
+</select>
 
-<button onclick="createPost()">Post</button>
+<input id="socialUrl"
+type="url"
+placeholder="Paste your social media link">
+
+<input id="pointsCost"
+type="number"
+value="10"
+min="1"
+placeholder="Points cost">
+
+<button onclick="addLink()">Add Link</button>
 </div>
 
-<div id="posts"></div>
+<!-- MY LINKS -->
+<div class="card">
+<h2>🔗 My Links</h2>
+<div id="myLinks">
+<p>No links yet.</p>
+</div>
+</div>
 
 <div class="card">
 <button class="logout" onclick="logout()">Logout</button>
@@ -145,6 +185,10 @@ SUPABASE_URL,
 SUPABASE_KEY
 );
 
+let currentUser = null;
+
+
+/* SHOW REGISTER */
 
 function showRegister(){
 
@@ -157,6 +201,8 @@ document.getElementById("registerBox")
 }
 
 
+/* SHOW LOGIN */
+
 function showLogin(){
 
 document.getElementById("registerBox")
@@ -167,6 +213,8 @@ document.getElementById("loginBox")
 
 }
 
+
+/* REGISTER */
 
 async function register(){
 
@@ -179,39 +227,30 @@ document.getElementById("regPassword").value;
 const confirm =
 document.getElementById("regConfirm").value;
 
-
 if(!email || !password || !confirm){
 
-document.getElementById("message").innerText =
-"Please fill all fields.";
-
+showMessage("Please fill all fields.");
 return;
-}
 
+}
 
 if(password !== confirm){
 
-document.getElementById("message").innerText =
-"Passwords do not match.";
-
+showMessage("Passwords do not match.");
 return;
-}
 
+}
 
 if(password.length < 6){
 
-document.getElementById("message").innerText =
-"Password must be at least 6 characters.";
-
+showMessage("Password must be at least 6 characters.");
 return;
+
 }
 
+showMessage("Creating account...");
 
-document.getElementById("message").innerText =
-"Creating account...";
-
-
-const {error} =
+const {data,error} =
 await supabaseClient.auth.signUp({
 
 email:email,
@@ -219,21 +258,21 @@ password:password
 
 });
 
-
 if(error){
 
-document.getElementById("message").innerText =
-error.message;
-
+showMessage(error.message);
 return;
-}
-
-
-document.getElementById("message").innerText =
-"Account created! Check your Gmail.";
 
 }
 
+showMessage(
+"Account created! Check your Gmail."
+);
+
+}
+
+
+/* LOGIN */
 
 async function login(){
 
@@ -243,10 +282,7 @@ document.getElementById("email").value.trim();
 const password =
 document.getElementById("password").value;
 
-
-document.getElementById("message").innerText =
-"Logging in...";
-
+showMessage("Logging in...");
 
 const {data,error} =
 await supabaseClient.auth.signInWithPassword({
@@ -256,22 +292,51 @@ password:password
 
 });
 
-
 if(error){
 
-document.getElementById("message").innerText =
-error.message;
-
+showMessage(error.message);
 return;
-}
-
-
-showDashboard(data.user);
 
 }
 
+currentUser = data.user;
 
-function showDashboard(user){
+await createProfile();
+
+showDashboard();
+
+}
+
+
+/* CREATE PROFILE */
+
+async function createProfile(){
+
+const {data,error} =
+await supabaseClient
+.from("profiles")
+.select("id")
+.eq("id",currentUser.id)
+.maybeSingle();
+
+if(data) return;
+
+await supabaseClient
+.from("profiles")
+.insert({
+
+id:currentUser.id,
+email:currentUser.email,
+points:100
+
+});
+
+}
+
+
+/* DASHBOARD */
+
+async function showDashboard(){
 
 document.getElementById("loginBox")
 .classList.add("hidden");
@@ -283,16 +348,171 @@ document.getElementById("dashboard")
 .classList.remove("hidden");
 
 document.getElementById("userEmail").innerText =
-"Logged in as: " + user.email;
+"Logged in as: " + currentUser.email;
 
-document.getElementById("message").innerText = "";
+await loadPoints();
+await loadLinks();
+
+showMessage("");
 
 }
 
 
+/* LOAD POINTS */
+
+async function loadPoints(){
+
+const {data,error} =
+await supabaseClient
+.from("profiles")
+.select("points")
+.eq("id",currentUser.id)
+.single();
+
+if(data){
+
+document.getElementById("points")
+.innerText = data.points ?? 0;
+
+}
+
+}
+
+
+/* ADD LINK */
+
+async function addLink(){
+
+const platform =
+document.getElementById("platform").value;
+
+const url =
+document.getElementById("socialUrl").value.trim();
+
+const cost =
+parseInt(
+document.getElementById("pointsCost").value
+);
+
+if(!url){
+
+showMessage("Please enter your social link.");
+return;
+
+}
+
+if(!url.startsWith("http://") &&
+!url.startsWith("https://")){
+
+showMessage("Please enter a valid link.");
+return;
+
+}
+
+if(!cost || cost < 1){
+
+showMessage("Enter valid points.");
+return;
+
+}
+
+showMessage("Adding link...");
+
+const {error} =
+await supabaseClient
+.from("links")
+.insert({
+
+user_id:currentUser.id,
+platform:platform,
+url:url,
+points_cost:cost
+
+});
+
+if(error){
+
+showMessage(error.message);
+return;
+
+}
+
+document.getElementById("socialUrl").value="";
+
+showMessage("Link added successfully! ✅");
+
+await loadLinks();
+
+}
+
+
+/* LOAD MY LINKS */
+
+async function loadLinks(){
+
+const {data,error} =
+await supabaseClient
+.from("links")
+.select("*")
+.eq("user_id",currentUser.id)
+.order("created_at",{ascending:false});
+
+const box =
+document.getElementById("myLinks");
+
+if(error){
+
+box.innerHTML =
+"<p>Could not load links.</p>";
+
+return;
+
+}
+
+if(!data || data.length === 0){
+
+box.innerHTML =
+"<p>No links yet.</p>";
+
+return;
+
+}
+
+box.innerHTML="";
+
+data.forEach(link=>{
+
+const div =
+document.createElement("div");
+
+div.className="link";
+
+div.innerHTML =
+
+"<b>"+link.platform+"</b><br>" +
+
+"<a href='"+link.url+"' target='_blank'>"+
+link.url+
+"</a><br>" +
+
+"⭐ Cost: "+
+link.points_cost+
+" Points";
+
+box.appendChild(div);
+
+});
+
+}
+
+
+/* LOGOUT */
+
 async function logout(){
 
 await supabaseClient.auth.signOut();
+
+currentUser=null;
 
 document.getElementById("dashboard")
 .classList.add("hidden");
@@ -303,42 +523,35 @@ document.getElementById("loginBox")
 }
 
 
-function createPost(){
+/* MESSAGE */
 
-const text =
-document.getElementById("postText").value.trim();
+function showMessage(text){
 
-if(!text){
-
-alert("Please write something!");
-
-return;
-}
-
-
-const post =
-document.createElement("div");
-
-post.className="card";
-
-post.innerHTML =
-"<h3>👤 You</h3>" +
-"<p>"+text+"</p>" +
-"<button onclick='likePost(this)'>❤️ Like</button>";
-
-document.getElementById("posts")
-.prepend(post);
-
-document.getElementById("postText").value="";
+document.getElementById("message")
+.innerText=text;
 
 }
 
 
-function likePost(button){
+/* CHECK LOGIN */
 
-button.innerText="❤️ Liked";
+async function checkUser(){
+
+const {data} =
+await supabaseClient.auth.getUser();
+
+if(data.user){
+
+currentUser=data.user;
+
+await createProfile();
+await showDashboard();
 
 }
+
+}
+
+checkUser();
 
 </script>
 
