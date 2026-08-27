@@ -20,7 +20,7 @@ header{
   text-align:center;
 }
 .container{
-  max-width:600px;
+  max-width:650px;
   margin:20px auto;
   padding:15px;
 }
@@ -55,6 +55,12 @@ button{
 .hidden{
   display:none;
 }
+.points{
+  font-size:28px;
+  font-weight:bold;
+  text-align:center;
+  color:#2563eb;
+}
 .link{
   background:#f8fafc;
   padding:12px;
@@ -64,16 +70,16 @@ button{
 .link a{
   word-break:break-all;
 }
+.campaign{
+  background:#f8fafc;
+  padding:15px;
+  margin-top:10px;
+  border-radius:10px;
+}
 #message{
   text-align:center;
   font-weight:bold;
   margin:10px;
-}
-.points{
-  font-size:28px;
-  font-weight:bold;
-  text-align:center;
-  color:#2563eb;
 }
 </style>
 </head>
@@ -101,6 +107,7 @@ Don't have an account?
 </p>
 </div>
 
+
 <!-- REGISTER -->
 <div id="registerBox" class="card hidden">
 <h2>Create Account</h2>
@@ -117,9 +124,11 @@ Already have an account?
 </p>
 </div>
 
+
 <!-- DASHBOARD -->
 <div id="dashboard" class="hidden">
 
+<!-- PROFILE -->
 <div class="card">
 <h2>Welcome! 🎉</h2>
 <p id="userEmail"></p>
@@ -128,6 +137,7 @@ Already have an account?
 ⭐ <span id="points">0</span> Points
 </div>
 </div>
+
 
 <!-- ADD LINK -->
 <div class="card">
@@ -140,11 +150,13 @@ Already have an account?
 <option value="TikTok">TikTok</option>
 </select>
 
-<input id="socialUrl"
+<input
+id="socialUrl"
 type="url"
 placeholder="Paste your social media link">
 
-<input id="pointsCost"
+<input
+id="pointsCost"
 type="number"
 value="10"
 min="1"
@@ -152,6 +164,7 @@ placeholder="Points cost">
 
 <button onclick="addLink()">Add Link</button>
 </div>
+
 
 <!-- MY LINKS -->
 <div class="card">
@@ -161,8 +174,59 @@ placeholder="Points cost">
 </div>
 </div>
 
+
+<!-- CREATE CAMPAIGN -->
 <div class="card">
-<button class="logout" onclick="logout()">Logout</button>
+<h2>📢 Create Campaign</h2>
+
+<select id="campaignLink">
+<option value="">Select your link</option>
+</select>
+
+<select id="action">
+<option value="Visit">Visit Link</option>
+<option value="Like">Like</option>
+<option value="Follow">Follow</option>
+<option value="Subscribe">Subscribe</option>
+</select>
+
+<input
+id="reward"
+type="number"
+value="10"
+min="1"
+placeholder="Reward Points">
+
+<input
+id="budget"
+type="number"
+value="100"
+min="1"
+placeholder="Campaign Budget">
+
+<button onclick="createCampaign()">
+Create Campaign
+</button>
+
+</div>
+
+
+<!-- MY CAMPAIGNS -->
+<div class="card">
+<h2>📋 My Campaigns</h2>
+
+<div id="myCampaigns">
+<p>No campaigns yet.</p>
+</div>
+
+</div>
+
+
+<!-- LOGOUT -->
+<div class="card">
+<button class="logout" onclick="logout()">
+Logout
+</button>
 </div>
 
 </div>
@@ -170,6 +234,7 @@ placeholder="Points cost">
 <div id="message"></div>
 
 </div>
+
 
 <script>
 
@@ -186,9 +251,10 @@ SUPABASE_KEY
 );
 
 let currentUser = null;
+let currentProfile = null;
 
 
-/* SHOW REGISTER */
+/* REGISTER */
 
 function showRegister(){
 
@@ -201,8 +267,6 @@ document.getElementById("registerBox")
 }
 
 
-/* SHOW LOGIN */
-
 function showLogin(){
 
 document.getElementById("registerBox")
@@ -214,18 +278,19 @@ document.getElementById("loginBox")
 }
 
 
-/* REGISTER */
-
 async function register(){
 
 const email =
-document.getElementById("regEmail").value.trim();
+document.getElementById("regEmail")
+.value.trim();
 
 const password =
-document.getElementById("regPassword").value;
+document.getElementById("regPassword")
+.value;
 
 const confirm =
-document.getElementById("regConfirm").value;
+document.getElementById("regConfirm")
+.value;
 
 if(!email || !password || !confirm){
 
@@ -250,12 +315,10 @@ return;
 
 showMessage("Creating account...");
 
-const {data,error} =
+const {error} =
 await supabaseClient.auth.signUp({
-
 email:email,
 password:password
-
 });
 
 if(error){
@@ -277,19 +340,19 @@ showMessage(
 async function login(){
 
 const email =
-document.getElementById("email").value.trim();
+document.getElementById("email")
+.value.trim();
 
 const password =
-document.getElementById("password").value;
+document.getElementById("password")
+.value;
 
 showMessage("Logging in...");
 
 const {data,error} =
 await supabaseClient.auth.signInWithPassword({
-
 email:email,
 password:password
-
 });
 
 if(error){
@@ -301,35 +364,53 @@ return;
 
 currentUser = data.user;
 
-await createProfile();
+await loadProfile();
 
-showDashboard();
+await showDashboard();
 
 }
 
 
-/* CREATE PROFILE */
+/* LOAD PROFILE */
 
-async function createProfile(){
+async function loadProfile(){
 
 const {data,error} =
 await supabaseClient
 .from("profiles")
-.select("id")
-.eq("id",currentUser.id)
+.select("*")
+.eq("auth_id",currentUser.id)
 .maybeSingle();
 
-if(data) return;
+if(data){
 
+currentProfile = data;
+return;
+
+}
+
+const username =
+currentUser.email.split("@")[0];
+
+const {data:newProfile,error:createError} =
 await supabaseClient
 .from("profiles")
 .insert({
+username:username,
+points:100,
+auth_id:currentUser.id
+})
+.select()
+.single();
 
-id:currentUser.id,
-email:currentUser.email,
-points:100
+if(createError){
 
-});
+showMessage(createError.message);
+return;
+
+}
+
+currentProfile = newProfile;
 
 }
 
@@ -352,6 +433,7 @@ document.getElementById("userEmail").innerText =
 
 await loadPoints();
 await loadLinks();
+await loadCampaigns();
 
 showMessage("");
 
@@ -362,11 +444,13 @@ showMessage("");
 
 async function loadPoints(){
 
+if(!currentProfile) return;
+
 const {data,error} =
 await supabaseClient
 .from("profiles")
 .select("points")
-.eq("id",currentUser.id)
+.eq("id",currentProfile.id)
 .single();
 
 if(data){
@@ -387,7 +471,8 @@ const platform =
 document.getElementById("platform").value;
 
 const url =
-document.getElementById("socialUrl").value.trim();
+document.getElementById("socialUrl")
+.value.trim();
 
 const cost =
 parseInt(
@@ -423,7 +508,7 @@ await supabaseClient
 .from("links")
 .insert({
 
-user_id:currentUser.id,
+user_id:currentProfile.id,
 platform:platform,
 url:url,
 points_cost:cost
@@ -437,7 +522,8 @@ return;
 
 }
 
-document.getElementById("socialUrl").value="";
+document.getElementById("socialUrl")
+.value="";
 
 showMessage("Link added successfully! ✅");
 
@@ -446,7 +532,7 @@ await loadLinks();
 }
 
 
-/* LOAD MY LINKS */
+/* LOAD LINKS */
 
 async function loadLinks(){
 
@@ -454,11 +540,17 @@ const {data,error} =
 await supabaseClient
 .from("links")
 .select("*")
-.eq("user_id",currentUser.id)
+.eq("user_id",currentProfile.id)
 .order("created_at",{ascending:false});
 
 const box =
 document.getElementById("myLinks");
+
+const select =
+document.getElementById("campaignLink");
+
+select.innerHTML =
+'<option value="">Select your link</option>';
 
 if(error){
 
@@ -469,7 +561,7 @@ return;
 
 }
 
-if(!data || data.length === 0){
+if(!data || data.length===0){
 
 box.innerHTML =
 "<p>No links yet.</p>";
@@ -488,16 +580,174 @@ document.createElement("div");
 div.className="link";
 
 div.innerHTML =
-
 "<b>"+link.platform+"</b><br>" +
-
 "<a href='"+link.url+"' target='_blank'>"+
 link.url+
 "</a><br>" +
-
 "⭐ Cost: "+
 link.points_cost+
 " Points";
+
+box.appendChild(div);
+
+
+const option =
+document.createElement("option");
+
+option.value=link.id;
+
+option.textContent =
+link.platform+" - "+link.url;
+
+select.appendChild(option);
+
+});
+
+}
+
+
+/* CREATE CAMPAIGN */
+
+async function createCampaign(){
+
+const linkId =
+document.getElementById("campaignLink").value;
+
+const action =
+document.getElementById("action").value;
+
+const reward =
+parseInt(
+document.getElementById("reward").value
+);
+
+const budget =
+parseInt(
+document.getElementById("budget").value
+);
+
+if(!linkId){
+
+showMessage("Select a link first.");
+return;
+
+}
+
+if(!reward || reward < 1){
+
+showMessage("Enter reward points.");
+return;
+
+}
+
+if(!budget || budget < reward){
+
+showMessage(
+"Budget must be equal to or greater than reward."
+);
+
+return;
+
+}
+
+const availablePoints =
+parseInt(
+document.getElementById("points").innerText
+);
+
+if(budget > availablePoints){
+
+showMessage(
+"Not enough points for this campaign."
+);
+
+return;
+
+}
+
+showMessage("Creating campaign...");
+
+const {error} =
+await supabaseClient
+.from("campaigns")
+.insert({
+
+user_id:currentProfile.id,
+link_id:parseInt(linkId),
+action:action,
+reward_points:reward,
+budget_points:budget,
+title:action+" Campaign",
+active:true
+
+});
+
+if(error){
+
+showMessage(error.message);
+return;
+
+}
+
+showMessage(
+"Campaign created successfully! ✅"
+);
+
+await loadCampaigns();
+
+}
+
+
+/* LOAD MY CAMPAIGNS */
+
+async function loadCampaigns(){
+
+const {data,error} =
+await supabaseClient
+.from("campaigns")
+.select("*")
+.eq("user_id",currentProfile.id)
+.order("created_at",{ascending:false});
+
+const box =
+document.getElementById("myCampaigns");
+
+if(error){
+
+box.innerHTML =
+"<p>Could not load campaigns.</p>";
+
+return;
+
+}
+
+if(!data || data.length===0){
+
+box.innerHTML =
+"<p>No campaigns yet.</p>";
+
+return;
+
+}
+
+box.innerHTML="";
+
+data.forEach(campaign=>{
+
+const div =
+document.createElement("div");
+
+div.className="campaign";
+
+div.innerHTML =
+"<b>"+campaign.title+"</b><br>" +
+"🎯 Action: "+campaign.action+"<br>" +
+"⭐ Reward: "+campaign.reward_points+
+" Points<br>" +
+"💰 Budget: "+campaign.budget_points+
+" Points<br>" +
+"Status: "+
+(campaign.active ? "🟢 Active" : "🔴 Closed");
 
 box.appendChild(div);
 
@@ -513,6 +763,7 @@ async function logout(){
 await supabaseClient.auth.signOut();
 
 currentUser=null;
+currentProfile=null;
 
 document.getElementById("dashboard")
 .classList.add("hidden");
@@ -544,8 +795,13 @@ if(data.user){
 
 currentUser=data.user;
 
-await createProfile();
+await loadProfile();
+
+if(currentProfile){
+
 await showDashboard();
+
+}
 
 }
 
